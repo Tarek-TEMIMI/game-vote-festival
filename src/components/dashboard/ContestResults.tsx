@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Loader2, Trophy } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
@@ -31,7 +30,6 @@ const ContestResults = () => {
       try {
         setIsLoading(true);
         
-        // Fetch contests with vote data
         const { data: contests, error: contestsError } = await supabase
           .from('contests')
           .select('id, name, start_date, end_date');
@@ -48,7 +46,6 @@ const ContestResults = () => {
 
         const results = await Promise.all(
           contests.map(async (contest) => {
-            // For each contest, get the games and their votes
             const { data: gameVotes, error: gameVotesError } = await supabase
               .from('contest_games')
               .select(`
@@ -65,7 +62,6 @@ const ContestResults = () => {
               return null;
             }
 
-            // Get vote data for each game in this contest
             const gamesWithRatings = await Promise.all(
               gameVotes.map(async (gv: any) => {
                 const gameId = gv.games.id;
@@ -86,7 +82,6 @@ const ContestResults = () => {
                   };
                 }
 
-                // Calculate average rating
                 const ratingsSum = votes.reduce((sum: number, vote: any) => sum + vote.rating, 0);
                 const avgRating = votes.length > 0 ? ratingsSum / votes.length : 0;
 
@@ -94,17 +89,15 @@ const ContestResults = () => {
                   ...gv.games,
                   average_rating: parseFloat(avgRating.toFixed(1)),
                   votes_count: votes.length,
-                  rank: 0 // Will be set after sorting
+                  rank: 0
                 };
               })
             );
 
-            // Sort games by average rating (descending)
             const sortedGames = gamesWithRatings
               .filter(Boolean)
               .sort((a, b) => b.average_rating - a.average_rating);
 
-            // Assign ranks
             sortedGames.forEach((game, index) => {
               game.rank = index + 1;
             });
@@ -125,7 +118,6 @@ const ContestResults = () => {
           })
         );
 
-        // Filter out any null results and sort by end date (most recent first)
         const validResults = results
           .filter(Boolean)
           .sort((a, b) => new Date(b.end_date).getTime() - new Date(a.end_date).getTime());
@@ -201,7 +193,7 @@ const ContestResults = () => {
                 <div className="ml-4 flex-grow">
                   <div className="font-medium">{game.name}</div>
                   <div className="flex items-center">
-                    <StarRating value={game.average_rating} readOnly size="sm" />
+                    <StarRating rating={game.average_rating} readOnly size="sm" />
                     <span className="text-sm text-gray-600 ml-2">
                       ({game.average_rating.toFixed(1)}/5 · {game.votes_count} votes)
                     </span>

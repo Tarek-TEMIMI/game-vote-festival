@@ -113,7 +113,7 @@ const UserVotesList = () => {
             </div>
             
             <div className="mb-2">
-              <StarRating value={vote.rating} readOnly />
+              <StarRating rating={vote.rating} readOnly />
             </div>
             
             {vote.comment && (

@@ -9,10 +9,22 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 // Check if credentials are available
 export const isSupabaseConfigured = supabaseUrl !== '' && supabaseAnonKey !== '';
 
-// Create a mock client that returns empty results for all operations when not configured
-const createMockClient = () => {
-  return {
-    from: () => ({
+// Create the Supabase client
+export const supabase = isSupabaseConfigured 
+  ? createClient<Database>(supabaseUrl, supabaseAnonKey)
+  : createClient<Database>('https://example.supabase.co', 'fake-key', {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
+
+// If Supabase is not configured, override the client methods with mock functions
+if (!isSupabaseConfigured) {
+  // Override the from method to return mock data
+  const originalFrom = supabase.from;
+  supabase.from = ((table: string) => {
+    const mockResponse = {
       select: () => ({
         eq: () => ({
           single: async () => ({ data: null, error: new Error('Supabase not configured') }),
@@ -23,21 +35,21 @@ const createMockClient = () => {
       insert: async () => ({ data: null, error: new Error('Supabase not configured') }),
       update: async () => ({ data: null, error: new Error('Supabase not configured') }),
       delete: async () => ({ data: null, error: new Error('Supabase not configured') }),
-    }),
-    auth: {
-      getSession: async () => ({ data: { session: null }, error: null }),
-      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } }, error: null }),
-      signInWithPassword: async () => ({ data: { session: null, user: null }, error: new Error('Supabase not configured') }),
-      signUp: async () => ({ data: { session: null, user: null }, error: new Error('Supabase not configured') }),
-      signOut: async () => ({ error: null }),
-    },
-  };
-};
+    };
+    
+    return mockResponse;
+  }) as typeof originalFrom;
 
-// Create client or use mock client if not configured
-export const supabase = isSupabaseConfigured 
-  ? createClient<Database>(supabaseUrl, supabaseAnonKey)
-  : createMockClient() as ReturnType<typeof createClient<Database>>;
+  // Override auth methods
+  const originalAuth = supabase.auth;
+  Object.assign(supabase.auth, {
+    getSession: async () => ({ data: { session: null }, error: null }),
+    onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } }, error: null }),
+    signInWithPassword: async () => ({ data: { session: null, user: null }, error: new Error('Supabase not configured') }),
+    signUp: async () => ({ data: { session: null, user: null }, error: new Error('Supabase not configured') }),
+    signOut: async () => ({ error: null }),
+  });
+}
 
 export type Tables = Database['public']['Tables'];
 export type User = Tables['users']['Row'];
