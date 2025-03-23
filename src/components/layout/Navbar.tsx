@@ -1,13 +1,15 @@
 
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ChevronDown } from 'lucide-react';
+import { Menu, X, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/context/AuthContext';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const { user } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -42,8 +44,8 @@ const Navbar = () => {
               to="/"
               className="flex items-center space-x-2 text-xl font-semibold transition-opacity hover:opacity-80"
             >
-              <span className="bg-primary text-primary-foreground py-1 px-2 rounded-lg">MJ</span>
-              <span>MonJeu.vote</span>
+              <span className="bg-primary text-primary-foreground py-1 px-2 rounded-lg">GPDJ</span>
+              <span>Grand Prix du Jeux</span>
             </Link>
           </div>
 
@@ -76,12 +78,23 @@ const Navbar = () => {
           </div>
 
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" asChild>
-              <Link to="/auth?mode=signin">Connexion</Link>
-            </Button>
-            <Button asChild>
-              <Link to="/auth?mode=signup">Inscription</Link>
-            </Button>
+            {user ? (
+              <Button variant="ghost" asChild>
+                <Link to="/dashboard" className="flex items-center space-x-2">
+                  <UserCircle className="w-5 h-5" />
+                  <span>Mon compte</span>
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button variant="ghost" asChild>
+                  <Link to="/auth?mode=signin">Connexion</Link>
+                </Button>
+                <Button asChild>
+                  <Link to="/auth?mode=signup">Inscription</Link>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -140,18 +153,29 @@ const Navbar = () => {
           <div className="pt-4 pb-3 border-t border-gray-200">
             <div className="flex items-center justify-between px-5">
               <div className="flex flex-col space-y-3">
-                <Link
-                  to="/auth?mode=signin"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-foreground hover:bg-gray-100"
-                >
-                  Connexion
-                </Link>
-                <Link
-                  to="/auth?mode=signup"
-                  className="block px-3 py-2 rounded-md text-base font-medium bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                  Inscription
-                </Link>
+                {user ? (
+                  <Link
+                    to="/dashboard"
+                    className="block px-3 py-2 rounded-md text-base font-medium bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
+                    Mon compte
+                  </Link>
+                ) : (
+                  <>
+                    <Link
+                      to="/auth?mode=signin"
+                      className="block px-3 py-2 rounded-md text-base font-medium text-foreground hover:bg-gray-100"
+                    >
+                      Connexion
+                    </Link>
+                    <Link
+                      to="/auth?mode=signup"
+                      className="block px-3 py-2 rounded-md text-base font-medium bg-primary text-primary-foreground hover:bg-primary/90"
+                    >
+                      Inscription
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>

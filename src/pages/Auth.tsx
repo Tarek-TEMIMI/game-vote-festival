@@ -9,12 +9,14 @@ import { toast } from "@/components/ui/use-toast";
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { initializeAnimations } from '@/lib/animations';
+import { useAuth } from '@/context/AuthContext';
 
 type AuthMode = 'signin' | 'signup';
 
 const Auth = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { signIn, signUp, user } = useAuth();
   const [mode, setMode] = useState<AuthMode>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,6 +26,11 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    // Redirect if already authenticated
+    if (user) {
+      navigate('/dashboard');
+    }
+
     // Get mode from URL query params
     const queryParams = new URLSearchParams(location.search);
     const modeParam = queryParams.get('mode');
@@ -36,13 +43,13 @@ const Auth = () => {
     
     // Scroll to top on page load
     window.scrollTo(0, 0);
-  }, [location]);
+  }, [location, user, navigate]);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
@@ -79,19 +86,20 @@ const Auth = () => {
       }
     }
 
-    // Simulate API call
-    setTimeout(() => {
-      toast({
-        title: mode === 'signin' ? "Connexion réussie" : "Compte créé avec succès",
-        description: mode === 'signin' 
-          ? "Vous êtes maintenant connecté." 
-          : "Votre compte a été créé. Vous pouvez maintenant vous connecter.",
-      });
+    try {
+      if (mode === 'signin') {
+        await signIn(email, password);
+        navigate('/dashboard');
+      } else {
+        await signUp(email, password, name);
+        // After signup, let's redirect to signin
+        setMode('signin');
+      }
+    } catch (error) {
+      console.error('Authentication error:', error);
+    } finally {
       setIsLoading(false);
-      
-      // Redirect to home page after successful auth
-      navigate('/');
-    }, 1500);
+    }
   };
 
   const toggleMode = () => {
