@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, MapPin, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Contest, Event, Game, getEventById, getGamesByContest } from '@/lib/data';
 
 interface ContestCardProps {
@@ -15,6 +15,10 @@ const ContestCard = ({ contest }: ContestCardProps) => {
   const { data: event } = useQuery({
     queryKey: ['event', contest.event_id],
     queryFn: async () => {
+      if (!isSupabaseConfigured) {
+        return getEventById(contest.event_id);
+      }
+      
       const { data, error } = await supabase
         .from('events')
         .select('*')
@@ -36,6 +40,10 @@ const ContestCard = ({ contest }: ContestCardProps) => {
   const { data: games = [] } = useQuery({
     queryKey: ['contestGames', contest.id],
     queryFn: async () => {
+      if (!isSupabaseConfigured) {
+        return getGamesByContest(contest.id);
+      }
+      
       if (!contest.associated_games || contest.associated_games.length === 0) {
         return [];
       }

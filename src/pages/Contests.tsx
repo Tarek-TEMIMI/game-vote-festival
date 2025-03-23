@@ -6,14 +6,22 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import SearchBar from '@/components/ui/SearchBar';
 import ContestCard from '@/components/contests/ContestCard';
-import { FilterX, Loader2 } from 'lucide-react';
+import { FilterX, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { initializeAnimations } from '@/lib/animations';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Contest } from '@/lib/data';
+import { toast } from '@/components/ui/use-toast';
 
 const fetchContests = async (): Promise<Contest[]> => {
-  // First, try to fetch from Supabase
+  // Check if Supabase is configured
+  if (!isSupabaseConfigured) {
+    console.warn('Supabase is not configured, using mock data');
+    const { contests } = await import('@/lib/data');
+    return contests;
+  }
+  
+  // Try to fetch from Supabase
   const { data, error } = await supabase
     .from('contests')
     .select('*');
