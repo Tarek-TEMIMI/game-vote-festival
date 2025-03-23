@@ -2,15 +2,57 @@
 import { Link } from 'react-router-dom';
 import { Calendar, MapPin, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Contest, getEventById, getGamesByContest } from '@/lib/data';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
+import { Contest, Event, Game, getEventById, getGamesByContest } from '@/lib/data';
 
 interface ContestCardProps {
   contest: Contest;
 }
 
 const ContestCard = ({ contest }: ContestCardProps) => {
-  const event = getEventById(contest.event_id);
-  const games = getGamesByContest(contest.id);
+  // Try to get event from Supabase, fall back to mock data
+  const { data: event } = useQuery({
+    queryKey: ['event', contest.event_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .eq('id', contest.event_id)
+        .single();
+      
+      if (error || !data) {
+        // Fallback to mock data
+        return getEventById(contest.event_id);
+      }
+      
+      return data as Event;
+    },
+    // Only fetch if we have an event_id
+    enabled: !!contest.event_id,
+  });
+  
+  // Try to get games from Supabase, fall back to mock data
+  const { data: games = [] } = useQuery({
+    queryKey: ['contestGames', contest.id],
+    queryFn: async () => {
+      if (!contest.associated_games || contest.associated_games.length === 0) {
+        return [];
+      }
+      
+      const { data, error } = await supabase
+        .from('games')
+        .select('*')
+        .in('id', contest.associated_games);
+      
+      if (error || !data || data.length === 0) {
+        // Fallback to mock data
+        return getGamesByContest(contest.id);
+      }
+      
+      return data as Game[];
+    },
+  });
   
   const startDate = new Date(contest.start_date);
   const endDate = new Date(contest.end_date);
@@ -31,7 +73,7 @@ const ContestCard = ({ contest }: ContestCardProps) => {
     <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-elevated transition-all duration-medium flex flex-col h-full">
       <div className="relative h-48 overflow-hidden">
         <img 
-          src={event?.images[0] || "https://images.unsplash.com/photo-1529480653439-b16be867b796?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"} 
+          src={event?.images ? (Array.isArray(event.images) ? event.images[0] : event.images) : "https://images.unsplash.com/photo-1529480653439-b16be867b796?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"} 
           alt={contest.name}
           className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
         />

@@ -1,27 +1,50 @@
 
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import SearchBar from '@/components/ui/SearchBar';
 import ContestCard from '@/components/contests/ContestCard';
-import { contests } from '@/lib/data';
-import { FilterX } from 'lucide-react';
+import { FilterX, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { initializeAnimations } from '@/lib/animations';
+import { supabase } from '@/lib/supabase';
+import { Contest } from '@/lib/data';
+
+const fetchContests = async (): Promise<Contest[]> => {
+  // First, try to fetch from Supabase
+  const { data, error } = await supabase
+    .from('contests')
+    .select('*');
+  
+  if (error) {
+    console.error('Error fetching contests from Supabase:', error);
+    // Fallback to mock data if there's an error
+    const { contests } = await import('@/lib/data');
+    return contests;
+  }
+  
+  if (!data || data.length === 0) {
+    console.log('No contests found in Supabase, using mock data');
+    const { contests } = await import('@/lib/data');
+    return contests;
+  }
+  
+  return data as Contest[];
+};
 
 const Contests = () => {
-  const [filteredContests, setFilteredContests] = useState(contests);
+  const [filteredContests, setFilteredContests] = useState<Contest[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isActive, setIsActive] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+
+  const { data: contests, isLoading, error } = useQuery({
+    queryKey: ['contests'],
+    queryFn: fetchContests,
+  });
 
   useEffect(() => {
-    // Simulate loading
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 800);
-    
     // Initialize animations
     initializeAnimations();
     
@@ -30,10 +53,14 @@ const Contests = () => {
   }, []);
 
   useEffect(() => {
-    filterContests();
-  }, [searchQuery, isActive]);
+    if (contests) {
+      filterContests();
+    }
+  }, [searchQuery, isActive, contests]);
 
   const filterContests = () => {
+    if (!contests) return;
+    
     let result = [...contests];
 
     // Filter by search query
@@ -68,6 +95,22 @@ const Contests = () => {
     setSearchQuery('');
     setIsActive(false);
   };
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow pt-24 pb-16 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-red-600 mb-4">Erreur lors du chargement des concours</h2>
+            <p className="text-gray-600 mb-6">Impossible de récupérer les données des concours.</p>
+            <Button asChild><Link to="/">Retour à l'accueil</Link></Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -122,21 +165,9 @@ const Contests = () => {
           {/* Results */}
           {isLoading ? (
             // Loading skeleton
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-              {[...Array(6)].map((_, index) => (
-                <div key={index} className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm animate-pulse">
-                  <div className="h-48 bg-gray-200" />
-                  <div className="p-5">
-                    <div className="h-6 bg-gray-200 rounded mb-2" />
-                    <div className="h-4 bg-gray-200 rounded w-2/3 mb-4" />
-                    <div className="space-y-2">
-                      <div className="h-3 bg-gray-200 rounded" />
-                      <div className="h-3 bg-gray-200 rounded" />
-                    </div>
-                    <div className="h-10 bg-gray-200 rounded mt-4" />
-                  </div>
-                </div>
-              ))}
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+              <p className="text-gray-600">Chargement des concours...</p>
             </div>
           ) : (
             filteredContests.length > 0 ? (
