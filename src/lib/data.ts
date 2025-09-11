@@ -1,4 +1,22 @@
 
+// Import local images
+import aventuriersImage from '@/assets/games/aventuriers-du-rail.jpg';
+import catanImage from '@/assets/games/catan.jpg';
+import dixitImage from '@/assets/games/dixit.jpg';
+import pandemicImage from '@/assets/games/pandemic.jpg';
+import sevenWondersImage from '@/assets/games/7-wonders.jpg';
+import azulImage from '@/assets/games/azul.jpg';
+
+import festivalParisLogo from '@/assets/events/festival-paris-logo.jpg';
+import festivalParis1 from '@/assets/events/festival-paris-1.jpg';
+import festivalParis2 from '@/assets/events/festival-paris-2.jpg';
+import salonLyonLogo from '@/assets/events/salon-lyon-logo.jpg';
+import salonLyon1 from '@/assets/events/salon-lyon-1.jpg';
+import salonLyon2 from '@/assets/events/salon-lyon-2.jpg';
+import gameWeekMarseilleLogo from '@/assets/events/game-week-marseille-logo.jpg';
+import gameWeekMarseille1 from '@/assets/events/game-week-marseille-1.jpg';
+import gameWeekMarseille2 from '@/assets/events/game-week-marseille-2.jpg';
+
 export interface Game {
   id: number;
   name: string;
@@ -43,7 +61,7 @@ export const games: Game[] = [
     id: 1,
     name: "Les Aventuriers du Rail",
     category: "Stratégie",
-    image: "https://images.unsplash.com/photo-1632501641765-e568d28b0015?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+    image: aventuriersImage,
     description: "Un jeu de stratégie où vous devez construire des lignes de chemin de fer reliant différentes villes à travers l'Europe. Collectez des cartes, revendiquez des routes et réalisez des objectifs secrets.",
     publisher: "Days of Wonder",
     voting_enabled: true
@@ -52,7 +70,7 @@ export const games: Game[] = [
     id: 2,
     name: "Catan",
     category: "Stratégie",
-    image: "https://images.unsplash.com/photo-1611371805429-8b5c1f0536fc?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+    image: catanImage,
     description: "Le jeu de société classique où vous construisez des colonies, des villes et des routes sur l'île de Catan. Échangez des ressources et développez votre colonie pour gagner.",
     publisher: "Kosmos",
     voting_enabled: true
@@ -61,7 +79,7 @@ export const games: Game[] = [
     id: 3,
     name: "Dixit",
     category: "Party Game",
-    image: "https://images.unsplash.com/photo-1529488127598-5b1512330375?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+    image: dixitImage,
     description: "Un jeu d'imagination et d'intuition où vous devez créer des indices pour que les autres joueurs devinent votre carte illustrée, mais sans être trop évident.",
     publisher: "Libellud",
     voting_enabled: true
@@ -70,7 +88,7 @@ export const games: Game[] = [
     id: 4,
     name: "Pandemic",
     category: "Coopératif",
-    image: "https://images.unsplash.com/photo-1576086135878-de63f102db08?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+    image: pandemicImage,
     description: "Un jeu coopératif où les joueurs travaillent ensemble pour arrêter la propagation de quatre maladies mortelles qui menacent le monde.",
     publisher: "Z-Man Games",
     voting_enabled: true
@@ -79,7 +97,7 @@ export const games: Game[] = [
     id: 5,
     name: "7 Wonders",
     category: "Stratégie",
-    image: "https://images.unsplash.com/photo-1517519014922-8fc06b814a0e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+    image: sevenWondersImage,
     description: "Un jeu de développement de civilisation où vous construisez une merveille du monde tout en développant des ressources, des bâtiments commerciaux et militaires.",
     publisher: "Repos Production",
     voting_enabled: true
@@ -88,7 +106,7 @@ export const games: Game[] = [
     id: 6,
     name: "Azul",
     category: "Stratégie Abstraite",
-    image: "https://images.unsplash.com/photo-1581710279297-578c9e7e35c6?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+    image: azulImage,
     description: "Un jeu où les joueurs sont des artisans chargés de décorer les murs du palais royal de Evora avec des carreaux de céramique colorés.",
     publisher: "Plan B Games",
     voting_enabled: true
@@ -131,10 +149,10 @@ export const events: Event[] = [
   {
     id: 1,
     name: "Festival du Jeu Paris",
-    logo: "https://images.unsplash.com/photo-1561089489-f13d5e730d72?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+    logo: festivalParisLogo,
     images: [
-      "https://images.unsplash.com/photo-1529480653439-b16be867b796?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1475274047050-1d0c0975c63e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+      festivalParis1,
+      festivalParis2
     ],
     start_date: "2025-06-10",
     end_date: "2025-06-12",
@@ -143,10 +161,10 @@ export const events: Event[] = [
   {
     id: 2,
     name: "Salon du Jeu Lyon",
-    logo: "https://images.unsplash.com/photo-1606503796858-b144dba3d141?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+    logo: salonLyonLogo,
     images: [
-      "https://images.unsplash.com/photo-1611996575749-79a3f2bc6a93?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1606503796907-1nhbf3731d52?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+      salonLyon1,
+      salonLyon2
     ],
     start_date: "2025-07-15",
     end_date: "2025-07-18",
@@ -155,10 +173,10 @@ export const events: Event[] = [
   {
     id: 3,
     name: "Game Week Marseille",
-    logo: "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+    logo: gameWeekMarseilleLogo,
     images: [
-      "https://images.unsplash.com/photo-1564939558297-fc396f18e5c7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1523875194681-bedd468c58bf?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+      gameWeekMarseille1,
+      gameWeekMarseille2
     ],
     start_date: "2025-08-01",
     end_date: "2025-08-05",
