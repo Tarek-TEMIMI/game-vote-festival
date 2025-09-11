@@ -23,7 +23,7 @@ export const supabase = isSupabaseConfigured
 if (!isSupabaseConfigured) {
   // Override the from method to return mock data
   const originalFrom = supabase.from;
-  supabase.from = ((table: string) => {
+  supabase.from = (((table: string) => {
     const mockResponse = {
       select: () => ({
         eq: () => ({
@@ -38,7 +38,7 @@ if (!isSupabaseConfigured) {
     };
     
     return mockResponse;
-  }) as typeof originalFrom;
+  }) as unknown) as typeof originalFrom;
 
   // Override auth methods
   const originalAuth = supabase.auth;

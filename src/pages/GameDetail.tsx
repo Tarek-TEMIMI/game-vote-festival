@@ -180,7 +180,7 @@ const GameDetail = () => {
                       <div>
                         <div className="text-3xl font-bold text-gray-900">4.2</div>
                         <div className="flex items-center mt-1">
-                          <StarRating readOnly initialRating={4} size="sm" />
+                          <StarRating readOnly rating={4} size="sm" />
                           <span className="ml-2 text-sm text-gray-600">
                             basé sur 143 votes
                           </span>
@@ -203,7 +203,7 @@ const GameDetail = () => {
                         <p className="text-sm font-medium mb-3">Voter pour ce jeu</p>
                         <div className="flex items-center gap-4">
                           <StarRating 
-                            initialRating={userRating} 
+                            rating={userRating} 
                             size="lg"
                             onChange={handleRatingChange}
                           />
@@ -304,7 +304,7 @@ const GameDetail = () => {
                           <h3 className="font-medium group-hover:text-primary transition-colors">{similarGame.name}</h3>
                           <p className="text-sm text-gray-600">{similarGame.category}</p>
                           <div className="flex items-center mt-1">
-                            <StarRating readOnly initialRating={4} size="sm" />
+                            <StarRating readOnly rating={4} size="sm" />
                             <span className="ml-1 text-xs text-gray-500">4.0</span>
                           </div>
                         </div>

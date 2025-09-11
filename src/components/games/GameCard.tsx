@@ -60,7 +60,7 @@ const GameCard = ({ game, showCategory = true }: GameCardProps) => {
           <div className="mt-2 mb-4 flex items-center">
             <StarRating 
               readOnly 
-              initialRating={4} 
+              rating={4} 
               size="sm" 
             />
             <span className="ml-2 text-sm text-gray-600">4.0 (125 votes)</span>
