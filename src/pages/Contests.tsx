@@ -9,41 +9,25 @@ import ContestCard from '@/components/contests/ContestCard';
 import { FilterX, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { initializeAnimations } from '@/lib/animations';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { Contest } from '@/lib/data';
 import { toast } from '@/components/ui/use-toast';
 
-const fetchContests = async (): Promise<Contest[]> => {
-  // Check if Supabase is configured
-  if (!isSupabaseConfigured) {
-    console.warn('Supabase is not configured, using mock data');
-    const { contests } = await import('@/lib/data');
-    return contests;
-  }
-  
-  // Try to fetch from Supabase
+const fetchContests = async (): Promise<any[]> => {
   const { data, error } = await supabase
     .from('contests')
     .select('*');
   
   if (error) {
     console.error('Error fetching contests from Supabase:', error);
-    // Fallback to mock data if there's an error
-    const { contests } = await import('@/lib/data');
-    return contests;
+    throw error;
   }
   
-  if (!data || data.length === 0) {
-    console.log('No contests found in Supabase, using mock data');
-    const { contests } = await import('@/lib/data');
-    return contests;
-  }
-  
-  return data as Contest[];
+  return data || [];
 };
 
 const Contests = () => {
-  const [filteredContests, setFilteredContests] = useState<Contest[]>([]);
+  const [filteredContests, setFilteredContests] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isActive, setIsActive] = useState(false);
 

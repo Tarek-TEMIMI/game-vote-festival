@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Loader2, Trophy } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
 import StarRating from '@/components/ui/StarRating';
 
