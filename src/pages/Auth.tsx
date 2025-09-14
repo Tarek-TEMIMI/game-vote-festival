@@ -10,8 +10,6 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { initializeAnimations } from '@/lib/animations';
 import { useAuth } from '@/context/AuthContext';
-import SupabaseSetup from '@/components/setup/SupabaseSetup';
-import { isSupabaseConfigured } from '@/lib/env';
 
 type AuthMode = 'signin' | 'signup';
 
@@ -89,17 +87,21 @@ const Auth = () => {
     }
 
     try {
-      if (!isSupabaseConfigured()) {
-        throw new Error("Supabase n'est pas configuré. Veuillez suivre les instructions pour configurer Supabase.");
-      }
-      
       if (mode === 'signin') {
         await signIn(email, password);
         navigate('/dashboard');
       } else {
         await signUp(email, password, name);
-        // After signup, let's redirect to signin
+        // After successful signup, show success message and switch to signin
+        toast({
+          title: "Vérifiez votre email",
+          description: "Un lien de confirmation a été envoyé à votre adresse email.",
+        });
         setMode('signin');
+        setEmail('');
+        setPassword('');
+        setName('');
+        setConfirmPassword('');
       }
     } catch (error) {
       console.error('Authentication error:', error);
@@ -129,12 +131,6 @@ const Auth = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center justify-center gap-12">
           {/* Left side: Image and text */}
           <div className="w-full lg:w-1/2 max-w-md animate-fade-up">
-            {/* Show Supabase setup instructions if not configured */}
-            {!isSupabaseConfigured() && (
-              <div className="mb-8">
-                <SupabaseSetup />
-              </div>
-            )}
             
             <Button 
               variant="ghost" 
@@ -273,7 +269,7 @@ const Auth = () => {
                 <Button 
                   type="submit" 
                   className="w-full"
-                  disabled={isLoading || !isSupabaseConfigured()}
+                  disabled={isLoading}
                 >
                   {isLoading ? (
                     <span className="flex items-center">
@@ -283,8 +279,6 @@ const Auth = () => {
                       </svg>
                       {mode === 'signin' ? 'Connexion en cours...' : 'Inscription en cours...'}
                     </span>
-                  ) : !isSupabaseConfigured() ? (
-                    'Configuration requise'
                   ) : (
                     mode === 'signin' ? 'Se connecter' : "S'inscrire"
                   )}

@@ -10,7 +10,8 @@ export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
 // Function to check if Supabase is properly configured
 export const isSupabaseConfigured = () => {
-  return SUPABASE_URL !== '' && SUPABASE_ANON_KEY !== '';
+  // Since we're using the native Supabase integration, it's always configured
+  return true;
 };
 
 // Instructions for setting up Supabase

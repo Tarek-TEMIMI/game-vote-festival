@@ -65,10 +65,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
+      const redirectUrl = `${window.location.origin}/dashboard`;
+      
       const { error, data } = await supabase.auth.signUp({
         email,
         password,
         options: {
+          emailRedirectTo: redirectUrl,
           data: {
             name,
           },
@@ -79,25 +82,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw error;
       }
 
-      // Create user profile in users table
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert({
-            id: data.user.id,
-            email,
-            name,
-            role: 'player',
-          });
-
-        if (profileError) {
-          toast({
-            title: "Erreur",
-            description: "Compte créé mais erreur lors de la création du profil.",
-            variant: "destructive",
-          });
-        }
-      }
+      // User profile creation is handled automatically by the database trigger
 
       toast({
         title: "Inscription réussie",
