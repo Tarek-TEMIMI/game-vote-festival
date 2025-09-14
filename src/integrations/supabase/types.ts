@@ -14,7 +14,227 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      contest_games: {
+        Row: {
+          contest_id: string
+          created_at: string
+          game_id: string
+          id: string
+        }
+        Insert: {
+          contest_id: string
+          created_at?: string
+          game_id: string
+          id?: string
+        }
+        Update: {
+          contest_id?: string
+          created_at?: string
+          game_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contest_games_contest_id_fkey"
+            columns: ["contest_id"]
+            isOneToOne: false
+            referencedRelation: "contests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contest_games_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contests: {
+        Row: {
+          created_at: string
+          end_date: string
+          event_id: string | null
+          id: string
+          name: string
+          start_date: string
+          user_id: string
+          voting_enabled: boolean
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          event_id?: string | null
+          id?: string
+          name: string
+          start_date: string
+          user_id: string
+          voting_enabled?: boolean
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          event_id?: string | null
+          id?: string
+          name?: string
+          start_date?: string
+          user_id?: string
+          voting_enabled?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contests_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          address: string
+          created_at: string
+          end_date: string
+          id: string
+          images: string[]
+          logo: string
+          name: string
+          start_date: string
+          user_id: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          end_date: string
+          id?: string
+          images?: string[]
+          logo: string
+          name: string
+          start_date: string
+          user_id: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          end_date?: string
+          id?: string
+          images?: string[]
+          logo?: string
+          name?: string
+          start_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      games: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          id: string
+          image: string
+          name: string
+          publisher: string
+          user_id: string
+          voting_enabled: boolean
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description: string
+          id?: string
+          image: string
+          name: string
+          publisher: string
+          user_id: string
+          voting_enabled?: boolean
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          image?: string
+          name?: string
+          publisher?: string
+          user_id?: string
+          voting_enabled?: boolean
+        }
+        Relationships: []
+      }
+      users: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          role: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          role?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          role?: string
+        }
+        Relationships: []
+      }
+      votes: {
+        Row: {
+          comment: string | null
+          contest_id: string
+          created_at: string
+          game_id: string
+          id: string
+          rating: number
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          contest_id: string
+          created_at?: string
+          game_id: string
+          id?: string
+          rating: number
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          contest_id?: string
+          created_at?: string
+          game_id?: string
+          id?: string
+          rating?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "votes_contest_id_fkey"
+            columns: ["contest_id"]
+            isOneToOne: false
+            referencedRelation: "contests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "votes_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
