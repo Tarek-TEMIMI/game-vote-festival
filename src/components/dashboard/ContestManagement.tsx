@@ -29,11 +29,28 @@ const ContestManagement = () => {
       try {
         setIsLoading(true);
         
-        // Fetch contests created by this user
-        const { data, error } = await supabase
+        // Get user role to determine what contests to show
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+        if (userError) {
+          console.error('Error fetching user role:', userError);
+          return;
+        }
+
+        // Fetch contests - admins see all, others see only their own
+        let query = supabase
           .from('contests')
-          .select('id, name, start_date, end_date')
-          .eq('user_id', user.id);
+          .select('id, name, start_date, end_date, user_id, event_id');
+        
+        if (userData?.role !== 'admin') {
+          query = query.eq('user_id', user.id);
+        }
+        
+        const { data, error } = await query;
 
         if (error) {
           console.error('Error fetching contests:', error);
@@ -127,7 +144,7 @@ const ContestManagement = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">Vos concours</h2>
+        <h2 className="text-xl font-semibold">Gestion des concours</h2>
         <Button>
           <Plus className="h-4 w-4 mr-2" />
           Créer un concours
