@@ -1,0 +1,59 @@
+# Configuration Prometheus pour Game Vote Festival SaaS
+# Collecte des métriques de performance et monitoring
+
+global:
+  scrape_interval: 15s # Intervalle de collecte par défaut
+  evaluation_interval: 15s # Intervalle d'évaluation des règles
+  external_labels:
+    monitor: 'game-vote-festival-monitor'
+
+# Configuration des règles d'alerte
+rule_files:
+  - "alert_rules.yml"
+
+# Configuration des scrape jobs
+scrape_configs:
+  # Monitoring de Prometheus lui-même
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Monitoring de l'application principale
+  - job_name: 'game-vote-festival-app'
+    static_configs:
+      - targets: ['app:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # Monitoring Nginx (si configuré avec module metrics)
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['app:8080']
+    metrics_path: '/nginx_status'
+    scrape_interval: 30s
+
+  # Monitoring Node Exporter (métriques système)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 30s
+
+  # Monitoring Redis (si utilisé)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 30s
+
+# Configuration des alertes (Alertmanager)
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+# Configuration du stockage des métriques
+storage:
+  tsdb:
+    retention.time: 15d
+    retention.size: 1GB

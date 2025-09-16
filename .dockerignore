@@ -1,0 +1,51 @@
+# Fichiers et dossiers à ignorer lors du build Docker
+
+# Dépendances
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environnement
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build
+dist
+build
+
+# Logs
+logs
+*.log
+
+# Tests
+coverage
+.nyc_output
+
+# Outils de développement
+.vscode
+.idea
+*.swp
+*.swo
+
+# Système
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+README.md
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Monitoring et docs
+monitoring/
+docs/
+*.md

@@ -1,0 +1,65 @@
+# Dockerfile de développement pour Game Vote Festival
+# Optimisé pour le hot-reload et le développement rapide
+
+FROM node:20-alpine
+
+# Métadonnées de l'image de développement
+LABEL maintainer="Game Vote Festival Team"
+LABEL description="Image de développement pour Game Vote Festival SaaS"
+LABEL version="1.0.0-dev"
+
+# Installation des outils de développement
+RUN apk add --no-cache \
+    git \
+    curl \
+    vim \
+    bash \
+    python3 \
+    make \
+    g++
+
+# Répertoire de travail
+WORKDIR /app
+
+# Configuration npm pour le développement
+RUN npm config set fund false && \
+    npm config set audit-level moderate
+
+# Copie des fichiers de dépendances
+COPY package*.json ./
+COPY bun.lockb* ./
+
+# Installation de toutes les dépendances (dev incluses)
+RUN npm ci --include=dev
+
+# Installation d'outils de développement globaux
+RUN npm install -g \
+    typescript \
+    @typescript-eslint/eslint-plugin \
+    prettier
+
+# Copie du code source (sera remplacé par un volume en dev)
+COPY . .
+
+# Variables d'environnement pour le développement
+ENV NODE_ENV=development
+ENV VITE_HOST=0.0.0.0
+ENV VITE_PORT=5173
+
+# Utilisateur non-root pour la sécurité
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S developer -u 1001 -G nodejs
+
+# Permissions pour le répertoire d'application
+RUN chown -R developer:nodejs /app
+USER developer
+
+# Port de développement
+EXPOSE 5173
+
+# Health check pour le serveur de développement
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:5173/ || exit 1
+
+# Commande par défaut pour le développement
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

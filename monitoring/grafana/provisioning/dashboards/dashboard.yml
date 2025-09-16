@@ -1,0 +1,13 @@
+# Configuration des dashboards Grafana pour Game Vote Festival
+apiVersion: 1
+
+providers:
+  - name: 'game-vote-festival-dashboards'
+    orgId: 1
+    folder: 'Game Vote Festival'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/json
