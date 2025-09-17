@@ -5,36 +5,38 @@ import Footer from '@/components/layout/Footer';
 import GameCard from '@/components/games/GameCard';
 import SearchBar from '@/components/ui/SearchBar';
 import CategoryFilter from '@/components/ui/CategoryFilter';
-import { games, categories, publishers } from '@/lib/data';
+import { categories, publishers } from '@/lib/data';
 import { initializeAnimations } from '@/lib/animations';
+import { useOrganizationGames } from '@/hooks/useOrganizationData';
+import { Loader2 } from 'lucide-react';
+import OrganizationSwitcher from '@/components/organization/OrganizationSwitcher';
+import { useAuth } from '@/context/AuthContext';
 
 const Games = () => {
-  const [filteredGames, setFilteredGames] = useState(games);
+  const { user } = useAuth();
+  const { data: games, isLoading, error } = useOrganizationGames();
+  const [filteredGames, setFilteredGames] = useState(games || []);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedPublishers, setSelectedPublishers] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading delay
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 800);
-
     // Initialize animations
     initializeAnimations();
     
     // Scroll to top on page load
     window.scrollTo(0, 0);
-
-    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    filterGames();
-  }, [searchQuery, selectedCategories, selectedPublishers]);
+    if (games) {
+      filterGames();
+    }
+  }, [searchQuery, selectedCategories, selectedPublishers, games]);
 
   const filterGames = () => {
+    if (!games) return;
+    
     let result = [...games];
 
     // Filter by search query
@@ -79,14 +81,21 @@ const Games = () => {
       
       <main className="flex-grow pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900 animate-fade-up">
-              Explorez les jeux
-            </h1>
-            <p className="mt-2 text-lg text-gray-600 max-w-3xl animate-fade-up" style={{ animationDelay: '0.1s' }}>
-              Découvrez notre collection complète de jeux de société et votez pour vos favoris lors des concours.
-            </p>
+          {/* Header with Organization Switcher */}
+          <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div className="mb-4 sm:mb-0">
+              <h1 className="text-3xl font-bold tracking-tight text-gray-900 animate-fade-up">
+                Explorez les jeux
+              </h1>
+              <p className="mt-2 text-lg text-gray-600 max-w-3xl animate-fade-up" style={{ animationDelay: '0.1s' }}>
+                Découvrez notre collection complète de jeux de société et votez pour vos favoris lors des concours.
+              </p>
+            </div>
+            {user && (
+              <div className="animate-fade-up" style={{ animationDelay: '0.2s' }}>
+                <OrganizationSwitcher />
+              </div>
+            )}
           </div>
           
           {/* Filters and Search */}
@@ -111,21 +120,18 @@ const Games = () => {
           {/* Results */}
           {isLoading ? (
             // Loading skeleton
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-              {[...Array(6)].map((_, index) => (
-                <div key={index} className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm animate-pulse">
-                  <div className="h-48 bg-gray-200" />
-                  <div className="p-5">
-                    <div className="h-6 bg-gray-200 rounded mb-2" />
-                    <div className="h-4 bg-gray-200 rounded w-2/3 mb-4" />
-                    <div className="space-y-2">
-                      <div className="h-3 bg-gray-200 rounded" />
-                      <div className="h-3 bg-gray-200 rounded" />
-                    </div>
-                    <div className="h-10 bg-gray-200 rounded mt-4" />
-                  </div>
-                </div>
-              ))}
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+              <p className="text-gray-600">Chargement des jeux...</p>
+            </div>
+          ) : error ? (
+            // Error state
+            <div className="text-center py-16 animate-fade-in">
+              <div className="text-6xl mb-4">⚠️</div>
+              <h3 className="text-xl font-semibold mb-2">Erreur de chargement</h3>
+              <p className="text-gray-600">
+                Impossible de charger les jeux. Veuillez réessayer plus tard.
+              </p>
             </div>
           ) : (
             filteredGames.length > 0 ? (
@@ -136,7 +142,7 @@ const Games = () => {
                     className="staggered-item"
                     style={{ animationDelay: `${index * 0.05}s` }}
                   >
-                    <GameCard game={game} />
+                    <GameCard game={game as any} />
                   </div>
                 ))}
               </div>
