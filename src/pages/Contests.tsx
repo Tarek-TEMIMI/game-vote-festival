@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import SearchBar from '@/components/ui/SearchBar';
@@ -9,32 +8,16 @@ import ContestCard from '@/components/contests/ContestCard';
 import { FilterX, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { initializeAnimations } from '@/lib/animations';
-import { supabase } from '@/integrations/supabase/client';
-import { Contest } from '@/lib/data';
-import { toast } from '@/components/ui/use-toast';
-
-const fetchContests = async (): Promise<any[]> => {
-  const { data, error } = await supabase
-    .from('contests')
-    .select('*');
-  
-  if (error) {
-    console.error('Error fetching contests from Supabase:', error);
-    throw error;
-  }
-  
-  return data || [];
-};
+import { useOrganizationContests } from '@/hooks/useOrganizationData';
+import OrganizationSwitcher from '@/components/organization/OrganizationSwitcher';
+import { useAuth } from '@/context/AuthContext';
 
 const Contests = () => {
-  const [filteredContests, setFilteredContests] = useState<any[]>([]);
+  const { user } = useAuth();
+  const { data: contests, isLoading, error } = useOrganizationContests();
+  const [filteredContests, setFilteredContests] = useState(contests || []);
   const [searchQuery, setSearchQuery] = useState('');
   const [isActive, setIsActive] = useState(false);
-
-  const { data: contests, isLoading, error } = useQuery({
-    queryKey: ['contests'],
-    queryFn: fetchContests,
-  });
 
   useEffect(() => {
     // Initialize animations
@@ -110,14 +93,21 @@ const Contests = () => {
       
       <main className="flex-grow pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900 animate-fade-up">
-              Concours de jeux
-            </h1>
-            <p className="mt-2 text-lg text-gray-600 max-w-3xl animate-fade-up" style={{ animationDelay: '0.1s' }}>
-              Découvrez les concours en cours et à venir, et votez pour vos jeux préférés.
-            </p>
+          {/* Header with Organization Switcher */}
+          <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div className="mb-4 sm:mb-0">
+              <h1 className="text-3xl font-bold tracking-tight text-gray-900 animate-fade-up">
+                Concours de jeux
+              </h1>
+              <p className="mt-2 text-lg text-gray-600 max-w-3xl animate-fade-up" style={{ animationDelay: '0.1s' }}>
+                Découvrez les concours en cours et à venir, et votez pour vos jeux préférés.
+              </p>
+            </div>
+            {user && (
+              <div className="animate-fade-up" style={{ animationDelay: '0.2s' }}>
+                <OrganizationSwitcher />
+              </div>
+            )}
           </div>
           
           {/* Filters */}

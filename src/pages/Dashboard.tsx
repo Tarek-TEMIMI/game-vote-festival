@@ -13,6 +13,7 @@ import UserVotesList from "@/components/dashboard/UserVotesList";
 import ContestResults from "@/components/dashboard/ContestResults";
 import ContestManagement from "@/components/dashboard/ContestManagement";
 import GameManagement from "@/components/dashboard/GameManagement";
+import OrganizationSwitcher from "@/components/organization/OrganizationSwitcher";
 
 // Define possible user roles
 type UserRole = 'player' | 'publisher' | 'admin';
@@ -79,8 +80,8 @@ const Dashboard = () => {
       
       <main className="flex-grow pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-            <div>
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
+            <div className="flex-1">
               <h1 className="text-3xl font-bold tracking-tight">
                 Tableau de bord
               </h1>
@@ -93,13 +94,17 @@ const Dashboard = () => {
                 )}
               </p>
             </div>
-            <Button 
-              variant="outline" 
-              onClick={handleSignOut}
-              className="mt-4 md:mt-0"
-            >
-              Déconnexion
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+              {(userRole === 'publisher' || userRole === 'admin') && (
+                <OrganizationSwitcher />
+              )}
+              <Button 
+                variant="outline" 
+                onClick={handleSignOut}
+              >
+                Déconnexion
+              </Button>
+            </div>
           </div>
           
           <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import SearchBar from '@/components/ui/SearchBar';
@@ -9,7 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { initializeAnimations } from '@/lib/animations';
-import { supabase } from '@/integrations/supabase/client';
+import { useOrganizationEvents } from '@/hooks/useOrganizationData';
+import OrganizationSwitcher from '@/components/organization/OrganizationSwitcher';
+import { useAuth } from '@/context/AuthContext';
 
 interface Event {
   id: string;
@@ -30,50 +31,12 @@ interface Contest {
   voting_enabled: boolean;
 }
 
-const fetchEvents = async (): Promise<Event[]> => {
-  // Fetch events with their associated contests
-  const { data: eventsData, error: eventsError } = await supabase
-    .from('events')
-    .select('*')
-    .order('start_date', { ascending: false });
-  
-  if (eventsError) {
-    console.error('Error fetching events:', eventsError);
-    throw eventsError;
-  }
-
-  // For each event, fetch its contests
-  const eventsWithContests = await Promise.all(
-    eventsData.map(async (event) => {
-      const { data: contestsData, error: contestsError } = await supabase
-        .from('contests')
-        .select('id, name, start_date, end_date, voting_enabled')
-        .eq('event_id', event.id)
-        .order('start_date', { ascending: true });
-
-      if (contestsError) {
-        console.error('Error fetching contests for event:', contestsError);
-      }
-
-      return {
-        ...event,
-        contests: contestsData || []
-      };
-    })
-  );
-  
-  return eventsWithContests;
-};
-
 const Events = () => {
-  const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
+  const { user } = useAuth();
+  const { data: events, isLoading, error } = useOrganizationEvents();
+  const [filteredEvents, setFilteredEvents] = useState(events || []);
   const [searchQuery, setSearchQuery] = useState('');
   const [showUpcoming, setShowUpcoming] = useState(false);
-
-  const { data: events, isLoading, error } = useQuery({
-    queryKey: ['events'],
-    queryFn: fetchEvents,
-  });
 
   useEffect(() => {
     // Initialize animations
@@ -159,14 +122,21 @@ const Events = () => {
       
       <main className="flex-grow pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900 animate-fade-up">
-              Événements de jeux
-            </h1>
-            <p className="mt-2 text-lg text-gray-600 max-w-3xl animate-fade-up" style={{ animationDelay: '0.1s' }}>
-              Découvrez les festivals, salons et événements dédiés aux jeux de société.
-            </p>
+          {/* Header with Organization Switcher */}
+          <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div className="mb-4 sm:mb-0">
+              <h1 className="text-3xl font-bold tracking-tight text-gray-900 animate-fade-up">
+                Événements de jeux
+              </h1>
+              <p className="mt-2 text-lg text-gray-600 max-w-3xl animate-fade-up" style={{ animationDelay: '0.1s' }}>
+                Découvrez les festivals, salons et événements dédiés aux jeux de société.
+              </p>
+            </div>
+            {user && (
+              <div className="animate-fade-up" style={{ animationDelay: '0.2s' }}>
+                <OrganizationSwitcher />
+              </div>
+            )}
           </div>
           
           {/* Filters */}
@@ -252,36 +222,13 @@ const Events = () => {
                         </CardHeader>
                         
                         <CardContent>
-                          {event.contests && event.contests.length > 0 && (
-                            <div className="mb-4">
-                              <div className="flex items-center mb-2">
-                                <Trophy className="w-4 h-4 mr-2 text-yellow-600" />
-                                <span className="font-medium text-sm">Concours associés ({event.contests.length})</span>
-                              </div>
-                              <div className="space-y-1">
-                                {event.contests.slice(0, 3).map((contest) => (
-                                  <div key={contest.id} className="text-sm text-gray-600 pl-6">
-                                    • {contest.name}
-                                  </div>
-                                ))}
-                                {event.contests.length > 3 && (
-                                  <div className="text-sm text-gray-500 pl-6">
-                                    ... et {event.contests.length - 3} autres
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                          
                           <div className="flex gap-2 mt-4">
                             <Button variant="outline" size="sm" className="flex-1">
                               Voir les détails
                             </Button>
-                            {event.contests && event.contests.length > 0 && (
-                              <Button asChild size="sm" className="flex-1">
-                                <Link to="/contests">Voir les concours</Link>
-                              </Button>
-                            )}
+                            <Button asChild size="sm" className="flex-1">
+                              <Link to="/contests">Voir les concours</Link>
+                            </Button>
                           </div>
                         </CardContent>
                       </Card>

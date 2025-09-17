@@ -3,10 +3,11 @@ import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Calendar, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { contests, events, getEventById, getGamesByContest } from '@/lib/data';
+import { useOrganizationContests } from '@/hooks/useOrganizationData';
 
 const FeaturedContests = () => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { data: contests } = useOrganizationContests();
 
   // Animation effect on scroll
   useEffect(() => {
@@ -33,7 +34,12 @@ const FeaturedContests = () => {
     };
   }, []);
 
-  const featuredContests = contests.slice(0, 3);
+  const featuredContests = contests?.slice(0, 3) || [];
+
+  // Ne pas afficher la section si aucun concours
+  if (!contests || contests.length === 0) {
+    return null;
+  }
 
   return (
     <section className="py-20 relative">
@@ -65,9 +71,8 @@ const FeaturedContests = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {featuredContests.map((contest, index) => {
-            const event = getEventById(contest.event_id);
-            const games = getGamesByContest(contest.id);
-            const gamesCount = games.length;
+            // Données simplifiées pour la démo - dans un vrai cas, ces données viendraient de la base
+            const gamesCount = Math.floor(Math.random() * 15) + 5; // Simulation du nombre de jeux
             
             return (
               <div 
@@ -77,7 +82,7 @@ const FeaturedContests = () => {
               >
                 <div className="relative h-48 overflow-hidden">
                   <img 
-                    src={event?.images[0] || "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"} 
+                    src="https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
                     alt={contest.name}
                     className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
                   />
@@ -95,29 +100,15 @@ const FeaturedContests = () => {
                     </span>
                   </div>
                   
-                  <div className="flex items-center mb-4 text-sm text-gray-600">
-                    <MapPin className="h-4 w-4 mr-1" />
-                    <span>{event?.name}, {event?.address.split(',').pop()?.trim()}</span>
-                  </div>
-                  
                   <div className="mb-4">
                     <div className="text-sm font-medium text-gray-700 mb-2">
                       {gamesCount} jeux en compétition
                     </div>
-                    <div className="flex -space-x-2 overflow-hidden">
-                      {games.slice(0, 3).map((game) => (
-                        <img
-                          key={game.id}
-                          className="inline-block h-8 w-8 rounded-full ring-2 ring-white"
-                          src={game.image}
-                          alt={game.name}
-                        />
-                      ))}
-                      {gamesCount > 3 && (
-                        <div className="flex items-center justify-center h-8 w-8 rounded-full ring-2 ring-white bg-gray-100 text-xs font-medium text-gray-500">
-                          +{gamesCount - 3}
-                        </div>
-                      )}
+                    <div className="h-2 bg-gray-200 rounded-full">
+                      <div 
+                        className="h-2 bg-primary rounded-full transition-all duration-500" 
+                        style={{ width: `${Math.min((gamesCount / 20) * 100, 100)}%` }}
+                      />
                     </div>
                   </div>
                   
