@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Plus, Edit, Trash2, BarChart, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
+import { useOrganizationContests } from '@/hooks/useOrganizationData';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
@@ -19,47 +20,20 @@ interface Contest {
 
 const ContestManagement = () => {
   const { user } = useAuth();
-  const [contests, setContests] = useState<Contest[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: contests = [], isLoading, refetch } = useOrganizationContests();
+  const [contestsWithStats, setContestsWithStats] = useState<Contest[]>([]);
 
   useEffect(() => {
-    const fetchContests = async () => {
-      if (!user) return;
+    const addStatsToContests = async () => {
+      if (!contests.length) {
+        setContestsWithStats([]);
+        return;
+      }
 
       try {
-        setIsLoading(true);
-        
-        // Get user role to determine what contests to show
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('role')
-          .eq('id', user.id)
-          .single();
-
-        if (userError) {
-          console.error('Error fetching user role:', userError);
-          return;
-        }
-
-        // Fetch contests - admins see all, others see only their own
-        let query = supabase
-          .from('contests')
-          .select('id, name, start_date, end_date, user_id, event_id');
-        
-        if (userData?.role !== 'admin') {
-          query = query.eq('user_id', user.id);
-        }
-        
-        const { data, error } = await query;
-
-        if (error) {
-          console.error('Error fetching contests:', error);
-          return;
-        }
-
         // For each contest, get the number of games and votes
         const contestsWithStats = await Promise.all(
-          data.map(async (contest) => {
+          contests.map(async (contest) => {
             // Get number of games in this contest
             const { count: gamesCount, error: gamesError } = await supabase
               .from('contest_games')
@@ -81,23 +55,24 @@ const ContestManagement = () => {
             }
 
             return {
-              ...contest,
+              id: contest.id,
+              name: contest.name,
+              start_date: contest.start_date,
+              end_date: contest.end_date,
               games_count: gamesCount || 0,
               votes_count: votesCount || 0
             };
           })
         );
 
-        setContests(contestsWithStats);
+        setContestsWithStats(contestsWithStats);
       } catch (error) {
-        console.error('Error:', error);
-      } finally {
-        setIsLoading(false);
+        console.error('Error adding stats to contests:', error);
       }
     };
 
-    fetchContests();
-  }, [user]);
+    addStatsToContests();
+  }, [contests]);
 
   const handleDelete = async (contestId: string) => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce concours ? Cette action est irréversible.')) {
@@ -116,7 +91,8 @@ const ContestManagement = () => {
       }
 
       // Update UI
-      setContests(contests.filter(contest => contest.id !== contestId));
+      setContestsWithStats(contestsWithStats.filter(contest => contest.id !== contestId));
+      refetch(); // Refetch organization contests
       
       toast({
         title: "Concours supprimé",
@@ -151,7 +127,7 @@ const ContestManagement = () => {
         </Button>
       </div>
 
-      {contests.length === 0 ? (
+      {contestsWithStats.length === 0 ? (
         <Card className="p-6 text-center">
           <div className="text-4xl mb-4">🏆</div>
           <h3 className="text-lg font-medium mb-2">Vous n'avez pas encore créé de concours</h3>
@@ -165,7 +141,7 @@ const ContestManagement = () => {
         </Card>
       ) : (
         <div className="space-y-4">
-          {contests.map((contest) => {
+          {contestsWithStats.map((contest) => {
             const startDate = new Date(contest.start_date);
             const endDate = new Date(contest.end_date);
             const now = new Date();

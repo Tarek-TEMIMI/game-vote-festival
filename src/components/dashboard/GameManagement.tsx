@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Plus, Edit, Trash2, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
+import { useOrganizationGames } from '@/hooks/useOrganizationData';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
@@ -19,30 +20,22 @@ interface Game {
 
 const GameManagement = () => {
   const { user } = useAuth();
+  const { data: organizationGames = [], isLoading: gamesLoading, refetch } = useOrganizationGames();
   const [games, setGames] = useState<Game[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchGames = async () => {
-      if (!user) return;
+    const addStatsToGames = async () => {
+      if (!organizationGames.length) {
+        setGames([]);
+        setIsLoading(false);
+        return;
+      }
 
       try {
-        setIsLoading(true);
-        
-        // Fetch games created by this user
-        const { data, error } = await supabase
-          .from('games')
-          .select('id, name, category, image')
-          .eq('user_id', user.id);
-
-        if (error) {
-          console.error('Error fetching games:', error);
-          return;
-        }
-
         // For each game, get the number of contests and votes
         const gamesWithStats = await Promise.all(
-          data.map(async (game) => {
+          organizationGames.map(async (game) => {
             // Get number of contests this game is in
             const { count: contestCount, error: contestsError } = await supabase
               .from('contest_games')
@@ -64,7 +57,10 @@ const GameManagement = () => {
             }
 
             return {
-              ...game,
+              id: game.id,
+              name: game.name,
+              category: game.category,
+              image: game.image,
               contest_count: contestCount || 0,
               vote_count: voteCount || 0
             };
@@ -73,14 +69,14 @@ const GameManagement = () => {
 
         setGames(gamesWithStats);
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Error adding stats to games:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchGames();
-  }, [user]);
+    addStatsToGames();
+  }, [organizationGames]);
 
   const handleDelete = async (gameId: string) => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce jeu ? Cette action est irréversible.')) {
@@ -100,6 +96,7 @@ const GameManagement = () => {
 
       // Update UI
       setGames(games.filter(game => game.id !== gameId));
+      refetch(); // Refetch organization games
       
       toast({
         title: "Jeu supprimé",
@@ -115,7 +112,7 @@ const GameManagement = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || gamesLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />

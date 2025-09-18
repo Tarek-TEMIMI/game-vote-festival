@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Loader2, Trophy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useOrganizationContests } from '@/hooks/useOrganizationData';
 import { Card } from '@/components/ui/card';
 import StarRating from '@/components/ui/StarRating';
 
@@ -22,6 +23,7 @@ interface ContestResult {
 }
 
 const ContestResults = () => {
+  const { data: contests = [], isLoading: contestsLoading } = useOrganizationContests();
   const [contestResults, setContestResults] = useState<ContestResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -29,15 +31,6 @@ const ContestResults = () => {
     const fetchContestResults = async () => {
       try {
         setIsLoading(true);
-        
-        const { data: contests, error: contestsError } = await supabase
-          .from('contests')
-          .select('id, name, start_date, end_date');
-
-        if (contestsError) {
-          console.error('Error fetching contests:', contestsError);
-          return;
-        }
 
         if (!contests || contests.length === 0) {
           setIsLoading(false);
@@ -131,9 +124,9 @@ const ContestResults = () => {
     };
 
     fetchContestResults();
-  }, []);
+  }, [contests]);
 
-  if (isLoading) {
+  if (isLoading || contestsLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
