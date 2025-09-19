@@ -55,6 +55,19 @@ const GameDetail = () => {
     const fetchGameData = async () => {
       if (!id) return;
 
+      // Check if ID is a valid UUID format
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(id)) {
+        console.error('Invalid UUID format:', id);
+        toast({
+          title: "Jeu introuvable",
+          description: "L'identifiant du jeu n'est pas valide.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       try {
         setIsLoading(true);
 
@@ -67,6 +80,12 @@ const GameDetail = () => {
 
         if (gameError) {
           console.error('Error fetching game:', gameError);
+          toast({
+            title: "Jeu introuvable",
+            description: "Ce jeu n'existe pas ou n'est plus disponible.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
           return;
         }
 
