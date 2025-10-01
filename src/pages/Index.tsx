@@ -6,12 +6,14 @@ import Hero from "@/components/home/Hero";
 import FeaturedContests from "@/components/home/FeaturedContests";
 import GameCard from "@/components/games/GameCard";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { games } from "@/lib/data";
+import { useOrganizationGames } from "@/hooks/useOrganizationData";
 import { initializeAnimations } from "@/lib/animations";
 
 const Index = () => {
+  const { data: games, isLoading } = useOrganizationGames();
+  
   useEffect(() => {
     // Initialize animations when component mounts
     initializeAnimations();
@@ -20,7 +22,7 @@ const Index = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  const featuredGames = games.slice(0, 3);
+  const featuredGames = games?.slice(0, 3) || [];
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -57,17 +59,27 @@ const Index = () => {
               </Button>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-              {featuredGames.map((game, index) => (
-                <div 
-                  key={game.id} 
-                  className="animate-on-scroll"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <GameCard game={game} />
-                </div>
-              ))}
-            </div>
+            {isLoading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : featuredGames.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                {featuredGames.map((game, index) => (
+                  <div 
+                    key={game.id} 
+                    className="animate-on-scroll"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    <GameCard game={game} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-600">Aucun jeu disponible pour le moment.</p>
+              </div>
+            )}
           </div>
         </section>
         
