@@ -56,12 +56,13 @@ export const useOrganizationGames = () => {
   return useQuery({
     queryKey: ['games', currentOrganization?.id],
     queryFn: async () => {
-      const query = supabase.from('games').select('*').order('created_at', { ascending: false });
-      const result = currentOrganization?.id 
-        ? await query.eq('organization_id', currentOrganization.id)
-        : await query;
-      if (result.error) throw result.error;
-      return (result.data || []) as unknown as GameWithOrganization[];
+      const { data, error } = await supabase
+        .from('games')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data as any;
     },
     enabled: true,
   });
@@ -74,12 +75,13 @@ export const useOrganizationContests = () => {
   return useQuery({
     queryKey: ['contests', currentOrganization?.id],
     queryFn: async () => {
-      const query = supabase.from('contests').select('*').order('created_at', { ascending: false });
-      const result = currentOrganization?.id 
-        ? await query.eq('organization_id', currentOrganization.id)
-        : await query;
-      if (result.error) throw result.error;
-      return (result.data || []) as unknown as ContestWithOrganization[];
+      const { data, error } = await supabase
+        .from('contests')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data as any;
     },
     enabled: true,
   });
@@ -92,12 +94,13 @@ export const useOrganizationEvents = () => {
   return useQuery({
     queryKey: ['events', currentOrganization?.id],
     queryFn: async () => {
-      const query = supabase.from('events').select('*').order('created_at', { ascending: false });
-      const result = currentOrganization?.id 
-        ? await query.eq('organization_id', currentOrganization.id)
-        : await query;
-      if (result.error) throw result.error;
-      return (result.data || []) as unknown as EventWithOrganization[];
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data as any;
     },
     enabled: true,
   });
