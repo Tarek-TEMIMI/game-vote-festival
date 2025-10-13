@@ -49,96 +49,57 @@ interface EventWithOrganization {
   created_at: string;
 }
 
-// Hook pour récupérer les jeux de l'organisation courante
+// Hook pour récupérer les jeux de l'organisation courante (ou tous les jeux publics)
 export const useOrganizationGames = () => {
   const { currentOrganization } = useOrganization();
   
   return useQuery({
     queryKey: ['games', currentOrganization?.id],
-    queryFn: async (): Promise<GameWithOrganization[]> => {
-      if (!currentOrganization) return [];
-      
-      // Pendant la migration progressive, afficher tous les jeux créés par l'utilisateur
-      const { data, error } = await supabase
-        .from('games')
-        .select('*')
-        .eq('user_id', currentOrganization.owner_user_id)
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error('Erreur lors de la récupération des jeux:', error);
-        throw error;
-      }
-      
-      // Ajouter organization_id si manquant (pour compatibilité avec migration progressive)
-      return (data || []).map(game => ({
-        ...game,
-        organization_id: (game as any).organization_id || currentOrganization.id
-      })) as GameWithOrganization[];
+    queryFn: async () => {
+      const query = supabase.from('games').select('*').order('created_at', { ascending: false });
+      const result = currentOrganization?.id 
+        ? await query.eq('organization_id', currentOrganization.id)
+        : await query;
+      if (result.error) throw result.error;
+      return (result.data || []) as unknown as GameWithOrganization[];
     },
-    enabled: !!currentOrganization,
+    enabled: true,
   });
 };
 
-// Hook pour récupérer les concours de l'organisation courante
+// Hook pour récupérer les concours de l'organisation courante (ou tous les concours publics)
 export const useOrganizationContests = () => {
   const { currentOrganization } = useOrganization();
   
   return useQuery({
     queryKey: ['contests', currentOrganization?.id],
-    queryFn: async (): Promise<ContestWithOrganization[]> => {
-      if (!currentOrganization) return [];
-      
-      // Pendant la migration progressive, afficher tous les concours créés par l'utilisateur
-      const { data, error } = await supabase
-        .from('contests')
-        .select('*')
-        .eq('user_id', currentOrganization.owner_user_id)
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error('Erreur lors de la récupération des concours:', error);
-        throw error;
-      }
-      
-      // Ajouter organization_id si manquant (pour compatibilité avec migration progressive)
-      return (data || []).map(contest => ({
-        ...contest,
-        organization_id: (contest as any).organization_id || currentOrganization.id
-      })) as ContestWithOrganization[];
+    queryFn: async () => {
+      const query = supabase.from('contests').select('*').order('created_at', { ascending: false });
+      const result = currentOrganization?.id 
+        ? await query.eq('organization_id', currentOrganization.id)
+        : await query;
+      if (result.error) throw result.error;
+      return (result.data || []) as unknown as ContestWithOrganization[];
     },
-    enabled: !!currentOrganization,
+    enabled: true,
   });
 };
 
-// Hook pour récupérer les événements de l'organisation courante
+// Hook pour récupérer les événements de l'organisation courante (ou tous les événements publics)
 export const useOrganizationEvents = () => {
   const { currentOrganization } = useOrganization();
   
   return useQuery({
     queryKey: ['events', currentOrganization?.id],
-    queryFn: async (): Promise<EventWithOrganization[]> => {
-      if (!currentOrganization) return [];
-      
-      // Pendant la migration progressive, afficher tous les événements créés par l'utilisateur
-      const { data, error } = await supabase
-        .from('events')
-        .select('*')
-        .eq('user_id', currentOrganization.owner_user_id)
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error('Erreur lors de la récupération des événements:', error);
-        throw error;
-      }
-      
-      // Ajouter organization_id si manquant (pour compatibilité avec migration progressive)
-      return (data || []).map(event => ({
-        ...event,
-        organization_id: (event as any).organization_id || currentOrganization.id
-      })) as EventWithOrganization[];
+    queryFn: async () => {
+      const query = supabase.from('events').select('*').order('created_at', { ascending: false });
+      const result = currentOrganization?.id 
+        ? await query.eq('organization_id', currentOrganization.id)
+        : await query;
+      if (result.error) throw result.error;
+      return (result.data || []) as unknown as EventWithOrganization[];
     },
-    enabled: !!currentOrganization,
+    enabled: true,
   });
 };
 
