@@ -20,18 +20,21 @@ export type Database = {
           created_at: string
           game_id: string
           id: string
+          organization_id: string | null
         }
         Insert: {
           contest_id: string
           created_at?: string
           game_id: string
           id?: string
+          organization_id?: string | null
         }
         Update: {
           contest_id?: string
           created_at?: string
           game_id?: string
           id?: string
+          organization_id?: string | null
         }
         Relationships: [
           {
@@ -48,6 +51,13 @@ export type Database = {
             referencedRelation: "games"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contest_games_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
         ]
       }
       contests: {
@@ -57,6 +67,7 @@ export type Database = {
           event_id: string | null
           id: string
           name: string
+          organization_id: string | null
           start_date: string
           user_id: string
           voting_enabled: boolean
@@ -67,6 +78,7 @@ export type Database = {
           event_id?: string | null
           id?: string
           name: string
+          organization_id?: string | null
           start_date: string
           user_id: string
           voting_enabled?: boolean
@@ -77,6 +89,7 @@ export type Database = {
           event_id?: string | null
           id?: string
           name?: string
+          organization_id?: string | null
           start_date?: string
           user_id?: string
           voting_enabled?: boolean
@@ -87,6 +100,13 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -100,6 +120,7 @@ export type Database = {
           images: string[]
           logo: string
           name: string
+          organization_id: string | null
           start_date: string
           user_id: string
         }
@@ -111,6 +132,7 @@ export type Database = {
           images?: string[]
           logo: string
           name: string
+          organization_id?: string | null
           start_date: string
           user_id: string
         }
@@ -122,10 +144,19 @@ export type Database = {
           images?: string[]
           logo?: string
           name?: string
+          organization_id?: string | null
           start_date?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       games: {
         Row: {
@@ -135,6 +166,7 @@ export type Database = {
           id: string
           image: string
           name: string
+          organization_id: string | null
           publisher: string
           user_id: string
           voting_enabled: boolean
@@ -146,6 +178,7 @@ export type Database = {
           id?: string
           image: string
           name: string
+          organization_id?: string | null
           publisher: string
           user_id: string
           voting_enabled?: boolean
@@ -157,9 +190,83 @@ export type Database = {
           id?: string
           image?: string
           name?: string
+          organization_id?: string | null
           publisher?: string
           user_id?: string
           voting_enabled?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "games_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_members: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          owner_user_id: string
+          plan: string
+          slug: string
+          stripe_customer_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          owner_user_id: string
+          plan?: string
+          slug: string
+          stripe_customer_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          owner_user_id?: string
+          plan?: string
+          slug?: string
+          stripe_customer_id?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -197,6 +304,7 @@ export type Database = {
           created_at: string
           game_id: string
           id: string
+          organization_id: string | null
           rating: number
           user_id: string
         }
@@ -206,6 +314,7 @@ export type Database = {
           created_at?: string
           game_id: string
           id?: string
+          organization_id?: string | null
           rating: number
           user_id: string
         }
@@ -215,6 +324,7 @@ export type Database = {
           created_at?: string
           game_id?: string
           id?: string
+          organization_id?: string | null
           rating?: number
           user_id?: string
         }
@@ -233,6 +343,13 @@ export type Database = {
             referencedRelation: "games"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "votes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
@@ -240,7 +357,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_org_role: {
+        Args: { _org_id: string; _roles: string[]; _user_id: string }
+        Returns: boolean
+      }
+      is_org_member: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
+      user_belongs_to_org: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
+      user_has_org_role: {
+        Args: { _org_id: string; _required_roles: string[]; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
