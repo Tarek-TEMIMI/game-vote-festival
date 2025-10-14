@@ -193,6 +193,24 @@ const GameDetail = () => {
       return;
     }
 
+    if (!contests || contests.length === 0) {
+      toast({
+        title: "Erreur",
+        description: "Ce jeu n'est pas associé à un concours actif.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!currentOrganization?.id) {
+      toast({
+        title: "Erreur",
+        description: "Vous devez être associé à une organisation pour voter.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setIsVoting(true);
 
@@ -213,7 +231,8 @@ const GameDetail = () => {
         user_id: user.id,
         rating: userRating,
         comment: userComment || null,
-        contest_id: contests[0]?.id || null // Use first contest if available
+        contest_id: contests[0].id,
+        organization_id: currentOrganization.id
       };
 
       if (existingVote) {
