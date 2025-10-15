@@ -1,60 +1,23 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { supabase } from '@/integrations/supabase/client';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { useNavigate } from "react-router-dom";
+import { useUserRole } from "@/hooks/useUserRole";
+import SuperAdminDashboard from "@/components/dashboard/SuperAdminDashboard";
+import EditorDashboard from "@/components/dashboard/EditorDashboard";
+import PlayerDashboard from "@/components/dashboard/PlayerDashboard";
 import UserProfile from "@/components/dashboard/UserProfile";
-import UserVotesList from "@/components/dashboard/UserVotesList";
-import ContestResults from "@/components/dashboard/ContestResults";
-import ContestManagement from "@/components/dashboard/ContestManagement";
-import GameManagement from "@/components/dashboard/GameManagement";
-import OrganizationSwitcher from "@/components/organization/OrganizationSwitcher";
-
-// Define possible user roles
-type UserRole = 'player' | 'publisher' | 'admin';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
-  const [activeTab, setActiveTab] = useState("profile");
-  const [userRole, setUserRole] = useState<UserRole>('player');
-  const [loading, setLoading] = useState(true);
+  const { role, loading } = useUserRole();
+  const [activeTab, setActiveTab] = useState("dashboard");
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const getUserRole = async () => {
-      if (!user) return;
-      
-      try {
-        // Try to get user data from Supabase
-        const { data, error } = await supabase
-          .from('users')
-          .select('role')
-          .eq('id', user.id)
-          .single();
-        
-        if (error) {
-          console.error('Error fetching user role:', error);
-          // Default to player if there's an error
-          setUserRole('player');
-        } else if (data) {
-          setUserRole(data.role as UserRole);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        // Default to player if there's an error
-        setUserRole('player');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    getUserRole();
-  }, [user]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -74,6 +37,12 @@ const Dashboard = () => {
     );
   }
 
+  const getRoleBadge = () => {
+    if (role === 'super_admin') return 'Super Administrateur';
+    if (role === 'editor') return 'Éditeur';
+    return 'Joueur';
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -87,87 +56,36 @@ const Dashboard = () => {
               </h1>
               <p className="text-gray-600">
                 Bienvenue, {user?.user_metadata?.name || user?.email}
-                {userRole !== 'player' && (
+                {role && role !== 'player' && (
                   <span className="ml-2 inline-block px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full">
-                    {userRole === 'publisher' ? 'Organisateur' : 'Administrateur'}
+                    {getRoleBadge()}
                   </span>
                 )}
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-              {(userRole === 'publisher' || userRole === 'admin') && (
-                <OrganizationSwitcher />
-              )}
-              <Button 
-                variant="outline" 
-                onClick={handleSignOut}
-              >
-                Déconnexion
-              </Button>
-            </div>
+            <Button 
+              variant="outline" 
+              onClick={handleSignOut}
+            >
+              Déconnexion
+            </Button>
           </div>
           
           <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="mb-8">
+              <TabsTrigger value="dashboard">Tableau de bord</TabsTrigger>
               <TabsTrigger value="profile">Mon Profil</TabsTrigger>
-              
-              {/* Tabs for regular players */}
-              {userRole === 'player' && (
-                <>
-                  <TabsTrigger value="votes">Mes Votes</TabsTrigger>
-                  <TabsTrigger value="results">Résultats</TabsTrigger>
-                </>
-              )}
-              
-              {/* Tabs for publishers and admins */}
-              {(userRole === 'publisher' || userRole === 'admin') && (
-                <>
-                  <TabsTrigger value="contests">Mes Concours</TabsTrigger>
-                  <TabsTrigger value="games">Mes Jeux</TabsTrigger>
-                </>
-              )}
             </TabsList>
             
-            {/* Profile section for all users */}
+            <TabsContent value="dashboard" className="animate-fade-in">
+              {role === 'super_admin' && <SuperAdminDashboard />}
+              {role === 'editor' && <EditorDashboard />}
+              {role === 'player' && <PlayerDashboard />}
+            </TabsContent>
+            
             <TabsContent value="profile" className="animate-fade-in">
               <UserProfile />
             </TabsContent>
-            
-            {/* Regular player tabs */}
-            {userRole === 'player' && (
-              <>
-                <TabsContent value="votes" className="animate-fade-in">
-                  <div className="bg-white rounded-lg shadow p-6">
-                    <h2 className="text-xl font-semibold mb-6">Mes Votes</h2>
-                    <UserVotesList />
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="results" className="animate-fade-in">
-                  <div className="bg-white rounded-lg shadow p-6">
-                    <h2 className="text-xl font-semibold mb-6">Résultats des concours</h2>
-                    <ContestResults />
-                  </div>
-                </TabsContent>
-              </>
-            )}
-            
-            {/* Publisher and admin tabs */}
-            {(userRole === 'publisher' || userRole === 'admin') && (
-              <>
-                <TabsContent value="contests" className="animate-fade-in">
-                  <div className="bg-white rounded-lg shadow p-6">
-                    <ContestManagement />
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="games" className="animate-fade-in">
-                  <div className="bg-white rounded-lg shadow p-6">
-                    <GameManagement />
-                  </div>
-                </TabsContent>
-              </>
-            )}
           </Tabs>
         </div>
       </main>
