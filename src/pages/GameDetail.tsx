@@ -202,15 +202,6 @@ const GameDetail = () => {
       return;
     }
 
-    if (!currentOrganization?.id) {
-      toast({
-        title: "Erreur",
-        description: "Vous devez être associé à une organisation pour voter.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
       setIsVoting(true);
 
@@ -226,13 +217,16 @@ const GameDetail = () => {
         throw checkError;
       }
 
+      // Only include organization_id if it's a valid UUID (not a temporary default one)
+      const isValidOrgId = currentOrganization?.id && !currentOrganization.id.startsWith('default-');
+      
       const voteData = {
         game_id: id,
         user_id: user.id,
         rating: userRating,
         comment: userComment || null,
         contest_id: contests[0].id,
-        organization_id: currentOrganization.id
+        ...(isValidOrgId && { organization_id: currentOrganization.id })
       };
 
       if (existingVote) {
