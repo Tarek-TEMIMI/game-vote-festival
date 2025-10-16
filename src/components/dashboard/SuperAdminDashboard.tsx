@@ -6,6 +6,7 @@ import { Users, Trophy, Gamepad2, Calendar, TrendingUp } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import LotteryDrawer from './LotteryDrawer';
 import UserManagement from './UserManagement';
+import AnalyticsDashboard from './AnalyticsDashboard';
 
 interface Stats {
   totalUsers: number;
@@ -145,12 +146,7 @@ const SuperAdminDashboard = () => {
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-4">
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Analyses détaillées</h3>
-            <p className="text-muted-foreground">
-              Graphiques et statistiques détaillées à venir...
-            </p>
-          </Card>
+          <AnalyticsDashboard />
         </TabsContent>
       </Tabs>
     </div>
