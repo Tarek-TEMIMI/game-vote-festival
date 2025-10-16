@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, Trophy, Gamepad2, Calendar, TrendingUp } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import LotteryDrawer from './LotteryDrawer';
+import UserManagement from './UserManagement';
 
 interface Stats {
   totalUsers: number;
@@ -140,12 +141,7 @@ const SuperAdminDashboard = () => {
         </TabsContent>
 
         <TabsContent value="users" className="space-y-4">
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Gestion des utilisateurs</h3>
-            <p className="text-muted-foreground">
-              Liste complète des utilisateurs à venir...
-            </p>
-          </Card>
+          <UserManagement />
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-4">
